@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8-р Анги — Темпераментийн Судалгаа</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #14171f;
+    --surface2: #1c2030;
+    --border: rgba(255,255,255,0.06);
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --sang: #f97316;
+    --chol: #eab308;
+    --mela: #22c55e;
+    --phle: #38bdf8;
+    --sang-dim: rgba(249,115,22,0.12);
+    --chol-dim: rgba(234,179,8,0.12);
+    --mela-dim: rgba(34,197,94,0.12);
+    --phle-dim: rgba(56,189,248,0.12);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* NOISE OVERLAY */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* GLOW BLOBS */
+  .blob {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.07;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .blob-1 { width: 600px; height: 600px; background: var(--sang); top: -200px; left: -100px; }
+  .blob-2 { width: 500px; height: 500px; background: var(--phle); bottom: -150px; right: -100px; }
+  .blob-3 { width: 400px; height: 400px; background: var(--mela); top: 40%; left: 50%; transform: translateX(-50%); }
+
+  .wrapper { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 0 24px 80px; }
+
+  /* ── HEADER ── */
+  header {
+    padding: 60px 0 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    width: fit-content;
+  }
+  .tag .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--sang); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(32px, 5vw, 60px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+  h1 em { font-style: normal; -webkit-text-stroke: 1px var(--sang); color: transparent; }
+  .subtitle { color: var(--muted); font-size: 15px; max-width: 500px; line-height: 1.6; }
+
+  /* ── STAT CARDS ── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin: 40px 0;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s, border-color 0.3s;
+    cursor: default;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 20px 20px 0 0;
+  }
+  .stat-card:nth-child(1)::before { background: var(--sang); }
+  .stat-card:nth-child(2)::before { background: var(--chol); }
+  .stat-card:nth-child(3)::before { background: var(--mela); }
+  .stat-card:nth-child(4)::before { background: var(--phle); }
+  .stat-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.12); }
+  .stat-emoji { font-size: 28px; margin-bottom: 12px; display: block; }
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 48px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .stat-card:nth-child(1) .stat-num { color: var(--sang); }
+  .stat-card:nth-child(2) .stat-num { color: var(--chol); }
+  .stat-card:nth-child(3) .stat-num { color: var(--mela); }
+  .stat-card:nth-child(4) .stat-num { color: var(--phle); }
+  .stat-label { font-size: 13px; color: var(--muted); letter-spacing: 0.02em; }
+  .stat-pct { font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+  /* ── SECTION TITLE ── */
+  .sec-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .sec-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── DONUT CHART + LEGEND ── */
+  .chart-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 40px;
+  }
+  .chart-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 32px;
+  }
+  .donut-wrap { display: flex; align-items: center; justify-content: center; gap: 40px; flex-wrap: wrap; }
+  svg.donut { overflow: visible; }
+  .legend { display: flex; flex-direction: column; gap: 14px; }
+  .legend-item { display: flex; align-items: center; gap: 12px; cursor: pointer; transition: opacity 0.2s; }
+  .legend-item:hover { opacity: 0.8; }
+  .legend-swatch { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+  .legend-name { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600; }
+  .legend-val { font-size: 13px; color: var(--muted); margin-left: auto; padding-left: 16px; }
+
+  /* ── BAR CHART (class breakdown) ── */
+  .class-bars { display: flex; flex-direction: column; gap: 20px; }
+  .class-row { display: flex; flex-direction: column; gap: 8px; }
+  .class-row-header { display: flex; justify-content: space-between; align-items: baseline; }
+  .class-name { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; }
+  .class-total { font-size: 12px; color: var(--muted); }
+  .bar-stack { display: flex; height: 28px; border-radius: 8px; overflow: hidden; gap: 2px; background: var(--surface2); }
+  .bar-seg { transition: filter 0.2s; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; color: rgba(0,0,0,0.6); }
+  .bar-seg:hover { filter: brightness(1.2); }
+  .bar-seg.sang { background: var(--sang); }
+  .bar-seg.chol { background: var(--chol); }
+  .bar-seg.mela { background: var(--mela); }
+  .bar-seg.phle { background: var(--phle); }
+
+  /* ── QUESTION HEATMAP ── */
+  .q-section { margin-bottom: 40px; }
+  .q-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .q-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: transform 0.2s;
+  }
+  .q-item:hover { transform: translateX(4px); }
+  .q-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+    width: 22px;
+    flex-shrink: 0;
+  }
+  .q-text { font-size: 12px; color: var(--muted); flex: 1; line-height: 1.4; }
+  .q-bar-wrap { width: 80px; flex-shrink: 0; }
+  .q-bar-bg { height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .q-bar-fill { height: 100%; border-radius: 3px; transition: width 0.8s cubic-bezier(.16,1,.3,1); }
+  .q-score { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; text-align: right; margin-top: 3px; }
+
+  /* ── STUDENT TABLE ── */
+  .table-section { margin-bottom: 40px; }
+  .filter-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-btn {
+    padding: 8px 18px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .filter-btn:hover, .filter-btn.active { background: var(--surface2); color: var(--text); border-color: rgba(255,255,255,0.15); }
+  .filter-btn.active.sang { border-color: var(--sang); color: var(--sang); }
+  .filter-btn.active.chol { border-color: var(--chol); color: var(--chol); }
+  .filter-btn.active.mela { border-color: var(--mela); color: var(--mela); }
+  .filter-btn.active.phle { border-color: var(--phle); color: var(--phle); }
+
+  .students-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  .stu-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px;
+    transition: transform 0.25s, border-color 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .stu-card::after {
+    content: attr(data-temp-short);
+    position: absolute;
+    bottom: -10px; right: -4px;
+    font-family: 'Syne', sans-serif;
+    font-size: 64px;
+    font-weight: 800;
+    opacity: 0.04;
+    pointer-events: none;
+  }
+  .stu-card:hover { transform: translateY(-3px); }
+  .stu-card.sang { border-color: rgba(249,115,22,0.25); }
+  .stu-card.chol { border-color: rgba(234,179,8,0.25); }
+  .stu-card.mela { border-color: rgba(34,197,94,0.25); }
+  .stu-card.phle { border-color: rgba(56,189,248,0.25); }
+  .stu-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+  .stu-name { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; }
+  .stu-class { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .stu-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 100px;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+  }
+  .stu-badge.sang { background: var(--sang-dim); color: var(--sang); }
+  .stu-badge.chol { background: var(--chol-dim); color: var(--chol); }
+  .stu-badge.mela { background: var(--mela-dim); color: var(--mela); }
+  .stu-badge.phle { background: var(--phle-dim); color: var(--phle); }
+  .stu-scores { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .stu-score { text-align: center; }
+  .stu-score-val { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; }
+  .stu-score-val.sang { color: var(--sang); }
+  .stu-score-val.chol { color: var(--chol); }
+  .stu-score-val.mela { color: var(--mela); }
+  .stu-score-val.phle { color: var(--phle); }
+  .stu-score-lbl { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  /* ── INFO CARDS ── */
+  .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 40px; }
+  .info-card {
+    border-radius: 20px;
+    padding: 28px;
+    border: 1px solid transparent;
+    transition: transform 0.3s;
+  }
+  .info-card:hover { transform: translateY(-4px); }
+  .info-card.sang { background: var(--sang-dim); border-color: rgba(249,115,22,0.2); }
+  .info-card.chol { background: var(--chol-dim); border-color: rgba(234,179,8,0.2); }
+  .info-card.mela { background: var(--mela-dim); border-color: rgba(34,197,94,0.2); }
+  .info-card.phle { background: var(--phle-dim); border-color: rgba(56,189,248,0.2); }
+  .info-icon { font-size: 32px; margin-bottom: 12px; display: block; }
+  .info-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+  .info-card.sang .info-title { color: var(--sang); }
+  .info-card.chol .info-title { color: var(--chol); }
+  .info-card.mela .info-title { color: var(--mela); }
+  .info-card.phle .info-title { color: var(--phle); }
+  .info-desc { font-size: 13px; color: var(--muted); line-height: 1.7; }
+
+  /* ── HIDDEN ── */
+  .hidden { display: none !important; }
+
+  /* ── FOOTER ── */
+  footer { text-align: center; color: var(--muted); font-size: 12px; padding: 40px 0 20px; border-top: 1px solid var(--border); }
+
+  /* ── ANIMATIONS ── */
+  .fade-up { opacity: 0; transform: translateY(24px); transition: opacity 0.7s, transform 0.7s; }
+  .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 768px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .chart-section { grid-template-columns: 1fr; }
+    .q-grid { grid-template-columns: 1fr; }
+    .info-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+<div class="blob blob-3"></div>
+
+<div class="wrapper">
+
+  <!-- HEADER -->
+  <header class="fade-up">
+    <div class="tag"><span class="dot"></span>Судалгааны дүн · 2026.05</div>
+    <h1>8-р Ангийн<br><em>Темперамент</em></h1>
+    <p class="subtitle">5 анги, 79 сурагчийн темпераментийн судалгааны иж бүрэн дүн шинжилгээ</p>
+  </header>
+
+  <!-- STAT CARDS -->
+  <div class="stats-row fade-up">
+    <div class="stat-card">
+      <span class="stat-emoji">🟠</span>
+      <div class="stat-num">62</div>
+      <div class="stat-label">Сангвиник</div>
+      <div class="stat-pct">78.5% — Нийгэмч, өөдрөг</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-emoji">🟡</span>
+      <div class="stat-num">1</div>
+      <div class="stat-label">Холерик</div>
+      <div class="stat-pct">1.3% — Хурдан, удирдагч</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-emoji">🟢</span>
+      <div class="stat-num">12</div>
+      <div class="stat-label">Меланхолик</div>
+      <div class="stat-pct">15.2% — Гүн бодолтой</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-emoji">🔵</span>
+      <div class="stat-num">4</div>
+      <div class="stat-label">Флегматик</div>
+      <div class="stat-pct">5.1% — Тайван, тэвчээртэй</div>
+    </div>
+  </div>
+
+  <!-- DONUT + CLASS BREAKDOWN -->
+  <div class="chart-section fade-up">
+    <div class="chart-box">
+      <div class="sec-title">Нийт тархалт</div>
+      <div class="donut-wrap">
+        <svg class="donut" width="180" height="180" viewBox="0 0 180 180">
+          <defs>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+              <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          <!-- Donut: total 79, sang=62, chol=1, mela=12, phle=4 -->
+          <!-- circumference of r=70: 439.82 -->
+          <!-- sang: 62/79 * 439.82 = 344.98 offset=0 -->
+          <!-- chol: 1/79 * 439.82 = 5.57 offset=344.98 -->
+          <!-- mela: 12/79 * 439.82 = 66.78 offset=350.55 -->
+          <!-- phle: 4/79 * 439.82 = 22.27 offset=417.33 -->
+          <circle cx="90" cy="90" r="70" fill="none" stroke="#1c2030" stroke-width="28"/>
+          <circle cx="90" cy="90" r="70" fill="none" stroke="#f97316" stroke-width="26"
+            stroke-dasharray="344.98 439.82" stroke-dashoffset="-109.955" stroke-linecap="round" filter="url(#glow)"/>
+          <circle cx="90" cy="90" r="70" fill="none" stroke="#eab308" stroke-width="26"
+            stroke-dasharray="5.57 439.82" stroke-dashoffset="-454.935" stroke-linecap="round"/>
+          <circle cx="90" cy="90" r="70" fill="none" stroke="#22c55e" stroke-width="26"
+            stroke-dasharray="66.78 439.82" stroke-dashoffset="-460.505" stroke-linecap="round"/>
+          <circle cx="90" cy="90" r="70" fill="none" stroke="#38bdf8" stroke-width="26"
+            stroke-dasharray="22.27 439.82" stroke-dashoffset="-527.285" stroke-linecap="round"/>
+          <text x="90" y="84" text-anchor="middle" font-family="Syne,sans-serif" font-size="28" font-weight="800" fill="#e8eaf0">79</text>
+          <text x="90" y="102" text-anchor="middle" font-family="DM Sans,sans-serif" font-size="11" fill="#6b7280">сурагч</text>
+        </svg>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-swatch" style="background:var(--sang)"></div><span class="legend-name">Сангвиник</span><span class="legend-val">62 · 78.5%</span></div>
+          <div class="legend-item"><div class="legend-swatch" style="background:var(--mela)"></div><span class="legend-name">Меланхолик</span><span class="legend-val">12 · 15.2%</span></div>
+          <div class="legend-item"><div class="legend-swatch" style="background:var(--phle)"></div><span class="legend-name">Флегматик</span><span class="legend-val">4 · 5.1%</span></div>
+          <div class="legend-item"><div class="legend-swatch" style="background:var(--chol)"></div><span class="legend-name">Холерик</span><span class="legend-val">1 · 1.3%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-box">
+      <div class="sec-title">Ангиар харьцуулалт</div>
+      <div class="class-bars">
+        <!-- 8-1: total=11, С=8, Х=0, М=1, Ф=2 -->
+        <div class="class-row">
+          <div class="class-row-header"><span class="class-name">8-1</span><span class="class-total">11 сурагч</span></div>
+          <div class="bar-stack">
+            <div class="bar-seg sang" style="width:72.7%" title="Сангвиник: 8">8</div>
+            <div class="bar-seg mela" style="width:9.1%" title="Меланхолик: 1"></div>
+            <div class="bar-seg phle" style="width:18.2%" title="Флегматик: 2">2</div>
+          </div>
+        </div>
+        <!-- 8-2: total=14, С=12, Ф=2 -->
+        <div class="class-row">
+          <div class="class-row-header"><span class="class-name">8-2</span><span class="class-total">14 сурагч</span></div>
+          <div class="bar-stack">
+            <div class="bar-seg sang" style="width:85.7%" title="Сангвиник: 12">12</div>
+            <div class="bar-seg phle" style="width:14.3%" title="Флегматик: 2">2</div>
+          </div>
+        </div>
+        <!-- 8-3: total=11, С=8, М=3 -->
+        <div class="class-row">
+          <div class="class-row-header"><span class="class-name">8-3</span><span class="class-total">11 сурагч</span></div>
+          <div class="bar-stack">
+            <div class="bar-seg sang" style="width:72.7%" title="Сангвиник: 8">8</div>
+            <div class="bar-seg mela" style="width:27.3%" title="Меланхолик: 3">3</div>
+          </div>
+        </div>
+        <!-- 8-4: total=17, С=14, Х=1, М=2 -->
+        <div class="class-row">
+          <div class="class-row-header"><span class="class-name">8-4</span><span class="class-total">17 сурагч</span></div>
+          <div class="bar-stack">
+            <div class="bar-seg sang" style="width:82.4%" title="Сангвиник: 14">14</div>
+            <div class="bar-seg chol" style="width:5.9%" title="Холерик: 1"></div>
+            <div class="bar-seg mela" style="width:11.8%" title="Меланхолик: 2">2</div>
+          </div>
+        </div>
+        <!-- 8-5: total=26, С=20, М=6 -->
+        <div class="class-row">
+          <div class="class-row-header"><span class="class-name">8-5</span><span class="class-total">26 сурагч</span></div>
+          <div class="bar-stack">
+            <div class="bar-seg sang" style="width:76.9%" title="Сангвиник: 20">20</div>
+            <div class="bar-seg mela" style="width:23.1%" title="Меланхолик: 6">6</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap;">
+        <span style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)"><span style="width:10px;height:10px;background:var(--sang);border-radius:2px;display:inline-block"></span>Сангвиник</span>
+        <span style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)"><span style="width:10px;height:10px;background:var(--chol);border-radius:2px;display:inline-block"></span>Холерик</span>
+        <span style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)"><span style="width:10px;height:10px;background:var(--mela);border-radius:2px;display:inline-block"></span>Меланхолик</span>
+        <span style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)"><span style="width:10px;height:10px;background:var(--phle);border-radius:2px;display:inline-block"></span>Флегматик</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUESTION ANALYSIS -->
+  <div class="q-section fade-up">
+    <div class="sec-title">Асуулт бүрийн дундаж оноо</div>
+    <div class="q-grid" id="qGrid"></div>
+  </div>
+
+  <!-- TEMPERAMENT INFO -->
+  <div class="sec-title fade-up">Темперамент бүрийн тайлбар</div>
+  <div class="info-grid fade-up">
+    <div class="info-card sang">
+      <span class="info-icon">🌟</span>
+      <div class="info-title">Сангвиник</div>
+      <div class="info-desc">Нийгэмч, харилцааны өндөр ур чадвартай. Шинэ хүмүүстэй амархан танилцдаг, яриа хөөрөөтэй, хөгжилтэй, өөдрөг зантай. Бусадтай хамт байхыг их эрхэмлэдэг. Сэтгэл хөдлөлийг чөлөөтэй илэрхийлдэг.</div>
+    </div>
+    <div class="info-card chol">
+      <span class="info-icon">⚡</span>
+      <div class="info-title">Холерик</div>
+      <div class="info-desc">Хурдан шийдвэр гаргадаг, удирдагч чанартай. Ажлыг хурдан эхлүүлдэг, идэвхтэй, зорилготой. Заримдаа амархан уурладаг боловч хурдан тайвшрах хандлагатай.</div>
+    </div>
+    <div class="info-card mela">
+      <span class="info-icon">🌿</span>
+      <div class="info-title">Меланхолик</div>
+      <div class="info-desc">Гүн бодолтой, нухацтай, дотоод ертөнцтэй. Анхааралтай, няхуур, чанарт ач холбогдол өгдөг. Ганцаардлыг эрхэмлэж, санаа зовнил өндөр байдаг.</div>
+    </div>
+    <div class="info-card phle">
+      <span class="info-icon">🌊</span>
+      <div class="info-title">Флегматик</div>
+      <div class="info-desc">Тайван, тогтвортой зан чанартай. Тэвчээртэй, маргаанаас зайлсхийдэг. Ажлаа алгуур боловч найдвартай гүйцэтгэдэг. Бусдын үгийг сайн сонсдог.</div>
+    </div>
+  </div>
+
+  <!-- STUDENT LIST -->
+  <div class="table-section fade-up">
+    <div class="sec-title">Сурагчдын жагсаалт</div>
+    <div class="filter-row">
+      <button class="filter-btn active" data-filter="all" onclick="filterStudents('all',this)">Бүгд (79)</button>
+      <button class="filter-btn" data-filter="sang" onclick="filterStudents('sang',this)">🟠 Сангвиник (62)</button>
+      <button class="filter-btn" data-filter="mela" onclick="filterStudents('mela',this)">🟢 Меланхолик (12)</button>
+      <button class="filter-btn" data-filter="phle" onclick="filterStudents('phle',this)">🔵 Флегматик (4)</button>
+      <button class="filter-btn" data-filter="chol" onclick="filterStudents('chol',this)">🟡 Холерик (1)</button>
+    </div>
+    <div class="students-grid" id="studentsGrid"></div>
+  </div>
+
+  <footer>
+    8-р Анги · Темпераментийн Судалгаа · 2026 · 79 сурагч
+  </footer>
+</div>
+
+<script>
+const questions = [
+  {n:1,  text:"Шинэ хүмүүстэй амархан танилцдаг", avg:3.57, type:"sang"},
+  {n:2,  text:"Аливааг шийдэхдээ нухацтай боддог", avg:3.76, type:"mela"},
+  {n:3,  text:"Хурдан шийдвэр гаргах дуртай", avg:3.49, type:"chol"},
+  {n:4,  text:"Тайван, тогтвортой байхыг хичээдэг", avg:3.84, type:"phle"},
+  {n:5,  text:"Яриа хөөрөө ихтэй", avg:3.90, type:"sang"},
+  {n:6,  text:"Амархан санаа зовдог", avg:3.97, type:"mela"},
+  {n:7,  text:"Бусдыг удирдах дуртай", avg:3.09, type:"chol"},
+  {n:8,  text:"Маргаанаас зайлсхийдэг", avg:3.56, type:"phle"},
+  {n:9,  text:"Ихэвчлэн хөгжилтэй байдаг", avg:3.82, type:"sang"},
+  {n:10, text:"Ганцаараа байх дуртай", avg:3.29, type:"mela"},
+  {n:11, text:"Ажлыг хурдан эхлүүлдэг", avg:3.03, type:"chol"},
+  {n:12, text:"Тэвчээртэй", avg:3.52, type:"phle"},
+  {n:13, text:"Сэтгэл хөдлөлөө шууд илэрхийлдэг", avg:3.18, type:"sang"},
+  {n:14, text:"Няхуур, анхааралтай", avg:3.28, type:"mela"},
+  {n:15, text:"Бусадтай хамт байх дуртай", avg:3.87, type:"sang"},
+  {n:16, text:"Ажлаа алгуур боловч тогтвортой хийдэг", avg:3.32, type:"phle"},
+  {n:17, text:"Амархан уурладаг", avg:3.20, type:"chol"},
+  {n:18, text:"Өөдрөг үзэлтэй", avg:3.80, type:"sang"},
+  {n:19, text:"Бусдын үгийг анхааралтай сонсдог", avg:3.91, type:"phle"},
+  {n:20, text:"Чимээгүй, дотогшоо байх үе байдаг", avg:3.90, type:"mela"},
+];
+
+const typeColor = {sang:"var(--sang)", chol:"var(--chol)", mela:"var(--mela)", phle:"var(--phle)"};
+
+// Render question grid
+const qGrid = document.getElementById('qGrid');
+questions.forEach(q => {
+  const pct = (q.avg / 5) * 100;
+  qGrid.innerHTML += `
+    <div class="q-item">
+      <div class="q-num">Q${q.n}</div>
+      <div class="q-text">Би ${q.text}</div>
+      <div class="q-bar-wrap">
+        <div class="q-bar-bg"><div class="q-bar-fill" style="width:${pct}%;background:${typeColor[q.type]}"></div></div>
+        <div class="q-score" style="color:${typeColor[q.type]}">${q.avg}</div>
+      </div>
+    </div>`;
+});
+
+// Student data
+const students = [
+  {cls:"8-1",name:"R.Tuguldur",s:14,c:14,m:12,p:5,t:"sang"},
+  {cls:"8-1",name:"Б.Хишигдэлгэр",s:28,c:10,m:17,p:20,t:"sang"},
+  {cls:"8-1",name:"Д.Хүслэн",s:20,c:11,m:19,p:23,t:"phle"},
+  {cls:"8-1",name:"М.Гэгээн-Уянга",s:20,c:11,m:20,p:22,t:"phle"},
+  {cls:"8-1",name:"М.Маргад",s:20,c:11,m:22,p:18,t:"mela"},
+  {cls:"8-1",name:"М.Маргад (2)",s:23,c:12,m:20,p:19,t:"sang"},
+  {cls:"8-1",name:"Н.Мичид",s:21,c:7,m:17,p:20,t:"sang"},
+  {cls:"8-1",name:"Т.Сувдаа",s:23,c:11,m:16,p:19,t:"sang"},
+  {cls:"8-1",name:"Х.Тэргэл",s:25,c:15,m:17,p:14,t:"sang"},
+  {cls:"8-1",name:"Х.Энхүүлэн",s:26,c:17,m:22,p:19,t:"sang"},
+  {cls:"8-1",name:"Э.Цэлмүүн",s:19,c:13,m:17,p:16,t:"sang"},
+  {cls:"8-2",name:"E.Uchral",s:23,c:10,m:17,p:19,t:"sang"},
+  {cls:"8-2",name:"M.Enkhtushig",s:22,c:13,m:17,p:10,t:"sang"},
+  {cls:"8-2",name:"Б.Амгалан",s:25,c:11,m:15,p:17,t:"sang"},
+  {cls:"8-2",name:"Б.Анунгоо",s:29,c:14,m:14,p:20,t:"sang"},
+  {cls:"8-2",name:"Д.Эрдэнэсувд",s:25,c:12,m:15,p:19,t:"sang"},
+  {cls:"8-2",name:"И.Марал",s:25,c:11,m:17,p:16,t:"sang"},
+  {cls:"8-2",name:"М.Цолмон",s:29,c:15,m:20,p:21,t:"sang"},
+  {cls:"8-2",name:"Т.Энхлүүн",s:23,c:16,m:19,p:21,t:"sang"},
+  {cls:"8-2",name:"У.Мичидмаа",s:29,c:10,m:17,p:17,t:"sang"},
+  {cls:"8-2",name:"Ц.Цолмон",s:22,c:9,m:22,p:23,t:"phle"},
+  {cls:"8-2",name:"Э.Ананд",s:30,c:15,m:15,p:14,t:"sang"},
+  {cls:"8-2",name:"Э.Дүүрэнжаргал",s:24,c:17,m:20,p:20,t:"sang"},
+  {cls:"8-2",name:"Э.Золжаргал",s:19,c:9,m:23,p:24,t:"phle"},
+  {cls:"8-2",name:"Ү.Эгшиглэн",s:19,c:12,m:14,p:17,t:"sang"},
+  {cls:"8-3",name:"B.Budkhuu",s:21,c:14,m:16,p:17,t:"sang"},
+  {cls:"8-3",name:"O.Nomuulan",s:21,c:10,m:17,p:14,t:"sang"},
+  {cls:"8-3",name:"Б.Бэлгүүдэй",s:27,c:16,m:16,p:15,t:"sang"},
+  {cls:"8-3",name:"Г.Ариунзул",s:25,c:13,m:25,p:24,t:"sang"},
+  {cls:"8-3",name:"Г.Энх-Оюу",s:25,c:13,m:19,p:20,t:"sang"},
+  {cls:"8-3",name:"Г.Энхүүлэн",s:21,c:12,m:19,p:20,t:"sang"},
+  {cls:"8-3",name:"Д.Жигүүр",s:26,c:14,m:17,p:19,t:"sang"},
+  {cls:"8-3",name:"Ц. Дөлгөөн",s:15,c:14,m:25,p:19,t:"mela"},
+  {cls:"8-3",name:"Ц.Амин-Эрдэнэ",s:12,c:10,m:21,p:18,t:"mela"},
+  {cls:"8-3",name:"Ц.Даян",s:23,c:16,m:21,p:20,t:"sang"},
+  {cls:"8-3",name:"Энгүүдэй",s:16,c:16,m:25,p:25,t:"mela"},
+  {cls:"8-4",name:"B.Bayasgalan",s:30,c:16,m:21,p:21,t:"sang"},
+  {cls:"8-4",name:"Bat-ochir",s:25,c:15,m:19,p:20,t:"sang"},
+  {cls:"8-4",name:"Ch. Tsetsujin",s:21,c:12,m:18,p:17,t:"sang"},
+  {cls:"8-4",name:"Б. Уяхан",s:14,c:11,m:17,p:15,t:"mela"},
+  {cls:"8-4",name:"Б.Анун",s:23,c:14,m:22,p:20,t:"sang"},
+  {cls:"8-4",name:"Б.Халиун",s:28,c:9,m:19,p:21,t:"sang"},
+  {cls:"8-4",name:"Б.Хангал",s:20,c:14,m:17,p:20,t:"sang"},
+  {cls:"8-4",name:"Б.Эмүлэн",s:27,c:15,m:18,p:15,t:"sang"},
+  {cls:"8-4",name:"Г. Золбоо",s:24,c:18,m:15,p:15,t:"sang"},
+  {cls:"8-4",name:"Г. Энхмишээл",s:25,c:13,m:20,p:24,t:"sang"},
+  {cls:"8-4",name:"Д.Есүй",s:27,c:18,m:20,p:20,t:"sang"},
+  {cls:"8-4",name:"М.Баттөр",s:6,c:11,m:6,p:7,t:"chol"},
+  {cls:"8-4",name:"М.Танхилуун",s:28,c:9,m:18,p:15,t:"sang"},
+  {cls:"8-4",name:"О. Өнөнар",s:24,c:14,m:22,p:23,t:"sang"},
+  {cls:"8-4",name:"О.Хангай",s:25,c:12,m:19,p:21,t:"sang"},
+  {cls:"8-4",name:"Ч.Чинхүслэн",s:17,c:10,m:22,p:19,t:"mela"},
+  {cls:"8-4",name:"Ч.Үлэмж-Эрдэнэ",s:23,c:12,m:19,p:17,t:"sang"},
+  {cls:"8-5",name:"Г.Дарья",s:17,c:11,m:19,p:15,t:"mela"},
+  {cls:"8-5",name:"A.Bold",s:18,c:12,m:15,p:15,t:"sang"},
+  {cls:"8-5",name:"D.Anu-Setsen",s:29,c:13,m:13,p:23,t:"sang"},
+  {cls:"8-5",name:"Gan-Erdene",s:26,c:16,m:17,p:22,t:"sang"},
+  {cls:"8-5",name:"M. Gegeenzaya",s:22,c:14,m:19,p:17,t:"sang"},
+  {cls:"8-5",name:"M.Badral",s:24,c:11,m:15,p:20,t:"sang"},
+  {cls:"8-5",name:"M.erdene",s:20,c:13,m:15,p:15,t:"sang"},
+  {cls:"8-5",name:"M.khulan",s:26,c:10,m:18,p:16,t:"sang"},
+  {cls:"8-5",name:"T.Bat",s:22,c:12,m:16,p:16,t:"sang"},
+  {cls:"8-5",name:"U.Khungarid",s:30,c:20,m:25,p:25,t:"sang"},
+  {cls:"8-5",name:"Б.Бадмаараг",s:25,c:14,m:16,p:19,t:"sang"},
+  {cls:"8-5",name:"Б.Мишээл",s:21,c:15,m:18,p:18,t:"sang"},
+  {cls:"8-5",name:"Б.Эрхэмлэн",s:20,c:13,m:18,p:20,t:"sang"},
+  {cls:"8-5",name:"Б.Эрхэс",s:12,c:14,m:20,p:16,t:"mela"},
+  {cls:"8-5",name:"Г Далай-Амгалан",s:19,c:14,m:15,p:13,t:"sang"},
+  {cls:"8-5",name:"Г. Гийгүүлэн",s:17,c:11,m:17,p:17,t:"sang"},
+  {cls:"8-5",name:"Д.Лхам-эрдэнэ",s:11,c:11,m:21,p:17,t:"mela"},
+  {cls:"8-5",name:"И.Нандин-Эрдэнэ",s:24,c:11,m:16,p:18,t:"sang"},
+  {cls:"8-5",name:"М.Мэргэн",s:12,c:10,m:13,p:13,t:"mela"},
+  {cls:"8-5",name:"М.Нэгүүс",s:24,c:13,m:22,p:19,t:"sang"},
+  {cls:"8-5",name:"Т. Хөхцэцэг",s:13,c:8,m:21,p:19,t:"mela"},
+  {cls:"8-5",name:"Х.Ариунгэрэл",s:25,c:11,m:18,p:24,t:"sang"},
+  {cls:"8-5",name:"Ш.Үжингоо",s:22,c:13,m:18,p:18,t:"sang"},
+  {cls:"8-5",name:"Э.Болд",s:23,c:15,m:18,p:11,t:"sang"},
+  {cls:"8-5",name:"Э.Түмэнжин",s:17,c:13,m:21,p:15,t:"mela"},
+  {cls:"8-5",name:"Ө.Өсөх-Ирээдүй",s:28,c:17,m:17,p:18,t:"sang"},
+];
+
+const tempNames = {sang:"Сангвиник", chol:"Холерик", mela:"Меланхолик", phle:"Флегматик"};
+const tempShort = {sang:"С", chol:"Х", mela:"М", phle:"Ф"};
+
+function renderStudents(filter) {
+  const grid = document.getElementById('studentsGrid');
+  const filtered = filter === 'all' ? students : students.filter(s => s.t === filter);
+  grid.innerHTML = filtered.map(s => `
+    <div class="stu-card ${s.t}" data-type="${s.t}" data-temp-short="${tempShort[s.t]}">
+      <div class="stu-top">
+        <div>
+          <div class="stu-name">${s.name}</div>
+          <div class="stu-class">${s.cls} анги</div>
+        </div>
+        <div class="stu-badge ${s.t}">${tempNames[s.t]}</div>
+      </div>
+      <div class="stu-scores">
+        <div class="stu-score"><div class="stu-score-val sang">${s.s}</div><div class="stu-score-lbl">Санг</div></div>
+        <div class="stu-score"><div class="stu-score-val chol">${s.c}</div><div class="stu-score-lbl">Хол</div></div>
+        <div class="stu-score"><div class="stu-score-val mela">${s.m}</div><div class="stu-score-lbl">Мел</div></div>
+        <div class="stu-score"><div class="stu-score-val phle">${s.p}</div><div class="stu-score-lbl">Фле</div></div>
+      </div>
+    </div>`).join('');
+}
+
+function filterStudents(type, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active','sang','chol','mela','phle'));
+  btn.classList.add('active');
+  if (type !== 'all') btn.classList.add(type);
+  renderStudents(type);
+}
+
+renderStudents('all');
+
+// Fade-up on scroll
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+
+// Animate q-bars
+setTimeout(() => {
+  document.querySelectorAll('.q-bar-fill').forEach(el => {
+    const w = el.style.width;
+    el.style.width = '0';
+    requestAnimationFrame(() => { el.style.width = w; });
+  });
+}, 300);
+</script>
+</body>
+</html>
